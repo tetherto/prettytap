@@ -1,0 +1,50 @@
+{
+  "name": "prettytap",
+  "version": "0.1.0",
+  "description": "Pretty-print TAP results.",
+  "main": "index.js",
+  "exports": {
+    "./package": "./package.json",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "bin": {
+    "prettytap": "./bin.js"
+  },
+  "files": [
+    "package.json",
+    "index.js",
+    "index.d.ts",
+    "parser.js",
+    "spec.js",
+    "json.js",
+    "colors.js",
+    "cli.js",
+    "bin.js"
+  ],
+  "devDependencies": {
+    "brittle": "^4.1.0",
+    "lunte": "^1.8.4",
+    "prettier": "^3.9.6",
+    "prettier-config-holepunch": "^2.0.0"
+  },
+  "scripts": {
+    "format": "prettier . --write",
+    "test": "npm run test:node && npm run test:bare",
+    "test:node": "brittle-node test/all.mjs",
+    "test:bare": "brittle-bare test/all.mjs",
+    "test:generate": "brittle-make-test test/all.mjs test/*.js",
+    "lint": "prettier . --check && lunte"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tetherto/prettytap"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tetherto/prettytap/issues"
+  },
+  "homepage": "https://github.com/tetherto/prettytap"
+}
