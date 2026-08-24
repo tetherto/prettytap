@@ -31,7 +31,7 @@ test('CLI integration', { skip: isBare }, function (t) {
   t.test('output help with --help', function (t) {
     const out = runCli(['--help'])
     t.ok(out.includes('prettytap - Pretty-print TAP results'))
-    t.ok(out.includes('Options:'))
+    t.ok(out.includes('Flags:'))
   })
 
   t.test('output version with --version', function (t) {

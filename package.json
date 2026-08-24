@@ -14,16 +14,14 @@
     "prettytap": "./bin.js"
   },
   "files": [
-    "package.json",
     "index.js",
     "index.d.ts",
-    "parser.js",
-    "spec.js",
-    "json.js",
-    "colors.js",
-    "cli.js",
-    "bin.js"
+    "bin.js",
+    "lib"
   ],
+  "dependencies": {
+    "paparam": "^1.13.0"
+  },
   "devDependencies": {
     "brittle": "^4.1.0",
     "lunte": "^1.8.4",
