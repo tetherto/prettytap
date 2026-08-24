@@ -3,14 +3,14 @@ const { test } = require('brittle')
 const isBare = typeof Bare !== 'undefined'
 const opts = { skip: isBare }
 
-test('output help with --help', opts, function (t) {
+test('output help with --help', opts, (t) => {
   const out = runCli(['--help'])
 
   t.ok(out.includes('prettytap - Pretty-print TAP results'))
   t.ok(out.includes('Flags:'))
 })
 
-test('output version with --version', opts, function (t) {
+test('output version with --version', opts, (t) => {
   const fs = require('fs')
   const path = require('path')
 
@@ -20,7 +20,7 @@ test('output version with --version', opts, function (t) {
   t.is(out, pkg.version)
 })
 
-test('format piped input with default spec formatter', opts, function (t) {
+test('format piped input with default spec formatter', opts, (t) => {
   const out = runCli([], require('./fixtures/example'))
 
   t.ok(out.includes('THIS IS A SUITE'))
@@ -28,7 +28,7 @@ test('format piped input with default spec formatter', opts, function (t) {
   t.ok(out.includes('total:     6'))
 })
 
-test('format piped input with -f json', opts, function (t) {
+test('format piped input with -f json', opts, (t) => {
   const json = JSON.parse(runCli(['-f', 'json'], require('./fixtures/example')))
 
   t.is(json.version, 13)
@@ -36,7 +36,7 @@ test('format piped input with -f json', opts, function (t) {
   t.is(json.results.length, 6)
 })
 
-test('stream spec output before stdin ends', opts, async function (t) {
+test('stream spec output before stdin ends', opts, async (t) => {
   const child = spawnCli()
 
   child.stdin.write('TAP version 13\nok 1 first\n')
@@ -52,7 +52,7 @@ test('stream spec output before stdin ends', opts, async function (t) {
   t.ok(child.output.includes('total:'))
 })
 
-test('wait for a slow first TAP line instead of exiting', opts, async function (t) {
+test('wait for a slow first TAP line instead of exiting', opts, async (t) => {
   const child = spawnCli()
 
   await new Promise(function (resolve) {
@@ -68,7 +68,7 @@ test('wait for a slow first TAP line instead of exiting', opts, async function (
   t.ok(child.output.includes('total:'))
 })
 
-test('warn and use spec formatter when unknown format is passed', opts, function (t) {
+test('warn and use spec formatter when unknown format is passed', opts, (t) => {
   const out = runCli(['-f', 'unknown'], require('./fixtures/example'))
 
   t.ok(out.includes('Warning: unrecognized formatter'))

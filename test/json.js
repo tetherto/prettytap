@@ -2,8 +2,8 @@ const { test } = require('brittle')
 const { JsonFormatter, parse } = require('..')
 const exampleTap = require('./fixtures/example')
 
-test('JSON Formatter', function (t) {
-  t.test('match expected JSON structure on example.txt', function (t) {
+test('JSON Formatter', (t) => {
+  t.test('match expected JSON structure on example.txt', (t) => {
     const results = parse(exampleTap)
     const formatter = new JsonFormatter()
     const json = formatter.toJson(results)
@@ -58,7 +58,7 @@ test('JSON Formatter', function (t) {
     })
   })
 
-  t.test('format to JSON string', function (t) {
+  t.test('format to JSON string', (t) => {
     const results = parse(exampleTap)
     const formatter = new JsonFormatter()
     const str = formatter.formatToString(results)

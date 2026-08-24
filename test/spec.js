@@ -2,8 +2,8 @@ const { test } = require('brittle')
 const { faint, parse, red, setColorEnabled, SpecFormatter } = require('..')
 const exampleTap = require('./fixtures/example')
 
-test('Spec Formatter', function (t) {
-  t.test('format TAP results to spec output string', function (t) {
+test('Spec Formatter', (t) => {
+  t.test('format TAP results to spec output string', (t) => {
     setColorEnabled(false)
     t.teardown(function () {
       setColorEnabled(true)
@@ -32,7 +32,7 @@ test('Spec Formatter', function (t) {
     t.ok(summary.includes('tasks:     1'))
   })
 
-  t.test('format multiple failures with correct pluralization', function (t) {
+  t.test('format multiple failures with correct pluralization', (t) => {
     setColorEnabled(false)
     t.teardown(function () {
       setColorEnabled(true)
@@ -51,7 +51,7 @@ not ok 2 second failure
     t.ok(summary.includes('Failed Tests: There were 2 failures'))
   })
 
-  t.test('color error line red and source context gray', function (t) {
+  t.test('color error line red and source context gray', (t) => {
     setColorEnabled(true)
     t.teardown(function () {
       setColorEnabled(false)
@@ -82,7 +82,7 @@ not ok 1 applies member discount
     t.absent(formatted.includes(faint('        t.is(100 * 0.9, 80);')))
   })
 
-  t.test('hide brittle runner summary comments', function (t) {
+  t.test('hide brittle runner summary comments', (t) => {
     setColorEnabled(false)
     t.teardown(function () {
       setColorEnabled(true)
@@ -101,7 +101,7 @@ ok 1 passing
     t.absent(/\n\s*ok\s*\n/.test(formatted))
   })
 
-  t.test('format no tests found', function (t) {
+  t.test('format no tests found', (t) => {
     setColorEnabled(false)
     t.teardown(function () {
       setColorEnabled(true)

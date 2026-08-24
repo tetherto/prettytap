@@ -1,8 +1,8 @@
 const { test } = require('brittle')
 const { parse, Parser, resultsToString } = require('..')
 
-test('TAP 13 Parser', function (t) {
-  t.test('parse TAP version and basic passing tests', function (t) {
+test('TAP 13 Parser', (t) => {
+  t.test('parse TAP version and basic passing tests', (t) => {
     const tap = `TAP version 13
 1..2
 ok 1 first test
@@ -22,7 +22,7 @@ ok 2 second test
     t.ok(results.isPassing())
   })
 
-  t.test('parse failing tests and diagnostics', function (t) {
+  t.test('parse failing tests and diagnostics', (t) => {
     const tap = `TAP version 13
 1..2
 ok 1 first test
@@ -37,7 +37,7 @@ not ok 2 second test
     t.absent(results.isPassing())
   })
 
-  t.test('parse skip and todo directives', function (t) {
+  t.test('parse skip and todo directives', (t) => {
     const tap = `TAP version 13
 1..3
 ok 1 regular pass
@@ -59,7 +59,7 @@ ok 3 # todo implement feature
     t.ok(results.isPassing())
   })
 
-  t.test('attach yaml on indented assertions to that assertion', function (t) {
+  t.test('attach yaml on indented assertions to that assertion', (t) => {
     const tap = `TAP version 13
 ok 1 - JSON Formatter
 # CLI integration
@@ -83,7 +83,7 @@ not ok 2 - CLI integration
     t.absent(results.tests[0].yamlBytes.includes('actual: 1.0.2'))
   })
 
-  t.test('ignore brittle runner summary comments', function (t) {
+  t.test('ignore brittle runner summary comments', (t) => {
     const tap = `TAP version 13
 ok 1 a
 ok 2 b
@@ -100,7 +100,7 @@ ok 2 b
     t.alike(results.explanation, [])
   })
 
-  t.test('parse YAML diagnostic blocks', function (t) {
+  t.test('parse YAML diagnostic blocks', (t) => {
     const tap = `TAP version 13
 1..1
 not ok 1 test with yaml
@@ -114,7 +114,7 @@ not ok 1 test with yaml
     t.is(results.tests[0].yamlBytes, '  message: "Failed"\n  severity: fail\n')
   })
 
-  t.test('parse explanations and diagnostics', function (t) {
+  t.test('parse explanations and diagnostics', (t) => {
     const tap = `TAP version 13
 # Suite Name
 # Group Name
@@ -128,7 +128,7 @@ ok 2 test 2
     t.alike(results.tests[0].diagnostics, ['Next Group'])
   })
 
-  t.test('parse bailout lines', function (t) {
+  t.test('parse bailout lines', (t) => {
     const tap = `TAP version 13
 Bail out! Database connection failed
 `
@@ -138,7 +138,7 @@ Bail out! Database connection failed
     t.absent(results.isPassing())
   })
 
-  t.test('emit each test as its line arrives, before end', function (t) {
+  t.test('emit each test as its line arrives, before end', (t) => {
     const parser = new Parser()
     const events = parser.write('TAP version 13\nok 1 first\n')
     const tests = events.filter(function (e) {
@@ -161,7 +161,7 @@ Bail out! Database connection failed
     t.is(second.test.description, 'second')
   })
 
-  t.test('emit yaml after the test it belongs to', function (t) {
+  t.test('emit yaml after the test it belongs to', (t) => {
     const parser = new Parser()
     parser.write('TAP version 13\nnot ok 1 fail\n')
     const yamlEvents = parser.write('  ---\n  actual: 1\n  ...\n').filter(function (e) {
@@ -171,7 +171,7 @@ Bail out! Database connection failed
     t.ok(yamlEvents[0].test.yamlBytes.includes('actual: 1'))
   })
 
-  t.test('generate results string representation', function (t) {
+  t.test('generate results string representation', (t) => {
     const tap = `TAP version 13
 1..3
 ok 1 test 1
