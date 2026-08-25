@@ -13,5 +13,5 @@ jobs:
       name: npm
     name: Publish
     steps:
-      - uses: holepunchto/actions/node-base@v1
-      - uses: holepunchto/actions/publish@v1
+      - uses: holepunchto/actions/node-base@584fd19994f94736b1afcb6adccb5156a18355a7
+      - uses: holepunchto/actions/publish@584fd19994f94736b1afcb6adccb5156a18355a7
