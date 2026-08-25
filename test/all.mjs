@@ -10,6 +10,7 @@ async function runTests() {
   await test.load(import.meta.resolve('./parser.js'))
   await test.load(import.meta.resolve('./spec.js'))
   await test.load(import.meta.resolve('./json.js'))
+  await test.load(import.meta.resolve('./colors.js'))
   await test.load(import.meta.resolve('./cli.js'))
 
   test.resume()

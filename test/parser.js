@@ -186,4 +186,46 @@ ok 3 # skip test 3
     t.ok(str.includes('Failed tests: 1'))
     t.ok(str.includes('Skipped tests: 1'))
   })
+
+  t.test('detect a bail out inside an unterminated YAML block', (t) => {
+    const tap = `TAP version 13
+not ok 1 boom
+  ---
+  msg: fail
+Bail out! disaster
+1..2
+`
+    const results = parse(tap)
+    t.ok(results.bailOut)
+    t.is(results.bailOutReason, 'disaster')
+    t.is(results.expectedTests, 2)
+    t.absent(results.tests[0].yamlBytes.includes('Bail out!'))
+    t.absent(results.tests[0].yamlBytes.includes('1..2'))
+  })
+
+  t.test('keep every top level test when the plan comes first and subtests are indented', (t) => {
+    const tap = `TAP version 13
+1..2
+    ok 1 subtest a
+    ok 2 subtest b
+ok 1 first top level
+    ok 1 subtest c
+ok 2 second top level
+`
+    const results = parse(tap)
+    const descriptions = results.tests.map((test) => test.description)
+    t.ok(descriptions.includes('first top level'))
+    t.ok(descriptions.includes('second top level'))
+  })
+
+  t.test('ignore a stray yaml start before any test', (t) => {
+    const tap = `TAP version 13
+---
+ok 1 still parsed
+1..1
+`
+    const results = parse(tap)
+    t.is(results.totalTests, 1)
+    t.is(results.tests[0].description, 'still parsed')
+  })
 })

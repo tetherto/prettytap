@@ -58,6 +58,20 @@ test('JSON Formatter', (t) => {
     })
   })
 
+  t.test('split a directive with no description', (t) => {
+    const tap = `TAP version 13
+1..2
+ok 1 # SKIP reason here
+ok 2 kept # TODO later
+`
+    const json = new JsonFormatter().toJson(parse(tap))
+
+    t.is(json.results[0].directive, 'SKIP')
+    t.is(json.results[0].description, 'reason here')
+    t.is(json.results[1].directive, 'TODO')
+    t.is(json.results[1].description, 'kept')
+  })
+
   t.test('format to JSON string', (t) => {
     const results = parse(exampleTap)
     const formatter = new JsonFormatter()

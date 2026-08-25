@@ -1,5 +1,5 @@
 const { test } = require('brittle')
-const { faint, parse, red, setColorEnabled, SpecFormatter } = require('..')
+const { faint, parse, Parser, red, setColorEnabled, SpecFormatter } = require('..')
 const exampleTap = require('./fixtures/example')
 
 test('Spec Formatter', (t) => {
@@ -117,4 +117,96 @@ ok 1 passing
 
     t.ok(summary.includes('No tests found'))
   })
+
+  t.test('stream the same output the batch path produces', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const tap = `TAP version 13
+# a suite
+# first group
+ok 1 alpha
+# second group
+not ok 2 beta
+  ---
+  operator: is
+  ...
+ok 3 gamma
+ok 4 # skip nope
+1..4
+`
+    t.is(streamToString(tap), new SpecFormatter().formatToString(parse(tap)))
+  })
+
+  t.test('stream suite headers, yaml detail and bail', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const out = streamToString(`TAP version 13
+# a suite
+# first group
+ok 1 alpha
+# second group
+not ok 2 beta
+  ---
+  operator: is
+  ...
+Bail out! stop
+`)
+
+    t.ok(out.includes('a suite'))
+    t.ok(out.includes('first group'))
+    t.ok(out.includes('second group'))
+    t.ok(out.includes('✓ alpha'))
+    t.ok(out.includes('⨯ beta'))
+    t.ok(out.includes('operator: is'))
+    t.ok(out.includes('⚠ Aborted: stop'))
+  })
+
+  t.test('suppress comments arriving before the first test', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const formatter = new SpecFormatter()
+    formatter.streamStart(parse('TAP version 13\n'))
+    formatter.streamComment('leading noise')
+
+    const out = formatter.streamTest({
+      testNumber: 1,
+      passed: true,
+      failed: false,
+      skipped: false,
+      todo: false,
+      description: 'alpha',
+      directiveText: '',
+      diagnostics: [],
+      yamlBytes: ''
+    })
+
+    t.absent(out.includes('leading noise'))
+  })
 })
+
+function streamToString(tap) {
+  const parser = new Parser()
+  const formatter = new SpecFormatter()
+  formatter.streamStart(parser.results)
+
+  let out = ''
+  const events = parser.write(tap).concat(parser.end())
+
+  for (const event of events) {
+    if (event.type === 'test') out += formatter.streamTest(event.test)
+    else if (event.type === 'yaml') out += formatter.streamYaml(event.test)
+    else if (event.type === 'bail') out += formatter.streamBail(event.reason)
+    else formatter.streamComment(event.text)
+  }
+
+  return out
+}

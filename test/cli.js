@@ -4,7 +4,7 @@ const isBare = typeof Bare !== 'undefined'
 const opts = { skip: isBare }
 
 test('output help with --help', opts, (t) => {
-  const out = runCli(['--help'])
+  const out = runCli(['--help']).stdout
 
   t.ok(out.includes('prettytap - Pretty-print TAP results'))
   t.ok(out.includes('Flags:'))
@@ -14,22 +14,28 @@ test('output version with --version', opts, (t) => {
   const fs = require('fs')
   const path = require('path')
 
-  const out = runCli(['--version']).trim()
+  const out = runCli(['--version']).stdout.trim()
   const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'))
 
   t.is(out, pkg.version)
 })
 
 test('format piped input with default spec formatter', opts, (t) => {
-  const out = runCli([], require('./fixtures/example'))
+  const out = runCli([], require('./fixtures/example')).stdout
 
   t.ok(out.includes('THIS IS A SUITE'))
   t.ok(out.includes('✓ this test should pass'))
   t.ok(out.includes('total:     6'))
 })
 
+test('exit non-zero on failing TAP and zero on passing TAP', opts, (t) => {
+  t.is(runCli([], 'TAP version 13\nnot ok 1 boom\n1..1\n').status, 1)
+  t.is(runCli([], 'TAP version 13\nok 1 fine\n1..1\n').status, 0)
+  t.is(runCli([], 'TAP version 13\nok 1 fine\nBail out! nope\n1..1\n').status, 1)
+})
+
 test('format piped input with -f json', opts, (t) => {
-  const json = JSON.parse(runCli(['-f', 'json'], require('./fixtures/example')))
+  const json = JSON.parse(runCli(['-f', 'json'], require('./fixtures/example')).stdout)
 
   t.is(json.version, 13)
   t.is(json.summary.total, 6)
@@ -69,11 +75,19 @@ test('wait for a slow first TAP line instead of exiting', opts, async (t) => {
 })
 
 test('warn and use spec formatter when unknown format is passed', opts, (t) => {
-  const out = runCli(['-f', 'unknown'], require('./fixtures/example'))
+  const res = runCli(['-f', 'unknown'], require('./fixtures/example'))
 
-  t.ok(out.includes('Warning: unrecognized formatter'))
-  t.ok(out.includes('using default formatter instead'))
-  t.ok(out.includes('THIS IS A SUITE'))
+  t.ok(res.stderr.includes('Warning: unrecognized formatter'))
+  t.ok(res.stderr.includes('using default formatter instead'))
+  t.absent(res.stdout.includes('Warning: unrecognized formatter'))
+  t.ok(res.stdout.includes('THIS IS A SUITE'))
+})
+
+test('keep stdout clean enough for jq when -f json', opts, (t) => {
+  const res = runCli(['-f', 'jsn'], 'TAP version 13\nok 1 fine\n1..1\n')
+
+  t.ok(res.stderr.includes('Warning: unrecognized formatter'))
+  t.absent(res.stdout.includes('Warning'))
 })
 
 function cliPath() {
@@ -81,7 +95,7 @@ function cliPath() {
 }
 
 function runCli(args, input) {
-  return require('child_process').execFileSync(process.execPath, [cliPath()].concat(args), {
+  return require('child_process').spawnSync(process.execPath, [cliPath()].concat(args), {
     encoding: 'utf8',
     input
   })
