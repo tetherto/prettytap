@@ -1,6 +1,6 @@
 {
   "name": "prettytap",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pretty-print TAP results.",
   "main": "index.js",
   "exports": {
@@ -31,6 +31,14 @@
   "scripts": {
     "format": "prettier . --write",
     "demo": "node examples/demo.js | node bin.js",
+    "demo:pass": "node examples/demo-pass.js | node bin.js",
+    "demo:json": "node examples/demo.js | node bin.js -f json",
+    "demo:bail": "node bin.js < test/fixtures/example.txt",
+    "demo:self": "npm run test:node | node bin.js",
+    "demo:chain": "npm run demo:pass && npm run demo:bail",
+    "test:pretty": "npm run test:node:pretty && npm run test:bare:pretty",
+    "test:node:pretty": "brittle-node test/all.mjs | node bin.js",
+    "test:bare:pretty": "brittle-bare test/all.mjs | node bin.js",
     "test": "npm run test:node && npm run test:bare",
     "test:node": "brittle-node test/all.mjs",
     "test:bare": "brittle-bare test/all.mjs",

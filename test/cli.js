@@ -76,12 +76,35 @@ test('warn and use spec formatter when unknown format is passed', opts, (t) => {
   t.ok(out.includes('THIS IS A SUITE'))
 })
 
+test('exit non-zero when tests fail', opts, (t) => {
+  const run = execCli([], require('./fixtures/example'))
+
+  t.is(run.status, 1)
+})
+
+test('exit zero when every test passes', opts, (t) => {
+  const run = execCli([], 'TAP version 13\n1..1\nok 1 all good\n')
+
+  t.is(run.status, 0)
+})
+
+test('exit zero when nested subtest asserts exceed the plan', opts, (t) => {
+  const tap = 'TAP version 13\n# a\n    ok 1 - assert\nok 1 - a\n1..1\n'
+  const run = execCli([], tap)
+
+  t.is(run.status, 0)
+})
+
 function cliPath() {
   return require('path').resolve(__dirname, '../bin.js')
 }
 
 function runCli(args, input) {
-  return require('child_process').execFileSync(process.execPath, [cliPath()].concat(args), {
+  return execCli(args, input).stdout
+}
+
+function execCli(args, input) {
+  return require('child_process').spawnSync(process.execPath, [cliPath()].concat(args), {
     encoding: 'utf8',
     input
   })
