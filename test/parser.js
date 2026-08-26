@@ -128,6 +128,36 @@ ok 2 test 2
     t.alike(results.tests[0].diagnostics, ['Next Group'])
   })
 
+  t.test('nested subtest asserts do not fail a passing run', (t) => {
+    const tap = `TAP version 13
+
+# a
+    ok 1 - should be equal
+    ok 2 - expected truthy value
+ok 1 - a # time = 0.2ms
+
+1..1
+# tests = 1/1 pass
+`
+    const results = parse(tap)
+    t.is(results.expectedTests, 1)
+    t.is(results.totalTests, 3)
+    t.is(results.failedTests, 0)
+    t.ok(results.isPassing())
+  })
+
+  t.test('missing tests relative to the plan fail', (t) => {
+    const tap = `TAP version 13
+1..3
+ok 1 first test
+ok 2 second test
+`
+    const results = parse(tap)
+    t.is(results.totalTests, 2)
+    t.is(results.failedTests, 0)
+    t.absent(results.isPassing())
+  })
+
   t.test('parse bailout lines', (t) => {
     const tap = `TAP version 13
 Bail out! Database connection failed
