@@ -1,5 +1,5 @@
 const { test } = require('brittle')
-const { faint, parse, red, setColorEnabled, SpecFormatter } = require('..')
+const { faint, parse, Parser, red, setColorEnabled, SpecFormatter } = require('..')
 const exampleTap = require('./fixtures/example')
 
 test('Spec Formatter', (t) => {
@@ -80,6 +80,99 @@ not ok 1 applies member discount
     t.ok(formatted.includes(faint('      });')))
     t.absent(formatted.includes(red('      });')))
     t.absent(formatted.includes(faint('        t.is(100 * 0.9, 80);')))
+  })
+
+  t.test('keep every diagnostic after the group heading', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const tap = `TAP version 13
+# my group
+    ok 1 - first
+# next group
+# reply: "hello"
+# tokens = not a runner comment
+    ok 2 - second
+1..2
+`
+    const formatted = new SpecFormatter().formatToString(parse(tap))
+
+    t.ok(formatted.includes('next group'), 'the first one is still the heading')
+    t.ok(formatted.includes('reply: "hello"'), 'the second is no longer dropped')
+    t.ok(formatted.includes('tokens = not a runner comment'), 'and so is the third')
+  })
+
+  t.test('keep diagnostics that follow the last test', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const tap = `TAP version 13
+    ok 1 - only
+# trailing one
+# trailing two
+1..1
+`
+    const formatted = new SpecFormatter().formatToString(parse(tap))
+
+    t.ok(formatted.includes('trailing one'))
+    t.ok(formatted.includes('trailing two'))
+  })
+
+  t.test('stream every diagnostic, not just the heading', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const parser = new Parser()
+    const formatter = new SpecFormatter()
+    formatter.streamStart(parser.results)
+
+    let out = ''
+    const tap = `TAP version 13
+# my group
+    ok 1 - first
+# next group
+# reply: "hello"
+# and more
+    ok 2 - second
+1..2
+`
+    for (const event of parser.write(tap)) {
+      if (event.type === 'test') out += formatter.streamTest(event.test)
+      else if (event.type === 'yaml') out += formatter.streamYaml(event.test)
+      else if (event.type !== 'bail') formatter.streamComment(event.text)
+    }
+    out += formatter.summaryToString()
+
+    t.ok(out.includes('next group'), 'the heading survives')
+    t.ok(out.includes('reply: "hello"'), 'and the diagnostics behind it')
+    t.ok(out.includes('and more'))
+  })
+
+  t.test('stream trailing diagnostics into the summary', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    const parser = new Parser()
+    const formatter = new SpecFormatter()
+    formatter.streamStart(parser.results)
+
+    let out = ''
+    for (const event of parser.write('TAP version 13\n    ok 1 - only\n# after the end\n1..1\n')) {
+      if (event.type === 'test') out += formatter.streamTest(event.test)
+      else if (event.type === 'yaml') out += formatter.streamYaml(event.test)
+      else if (event.type !== 'bail') formatter.streamComment(event.text)
+    }
+    out += formatter.summaryToString()
+
+    t.ok(out.includes('after the end'))
   })
 
   t.test('hide brittle runner summary comments', (t) => {
