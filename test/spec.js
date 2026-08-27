@@ -175,6 +175,32 @@ not ok 1 applies member discount
     t.ok(out.includes('after the end'))
   })
 
+  t.test('an indented comment is a diagnostic, not a heading', (t) => {
+    setColorEnabled(false)
+    t.teardown(function () {
+      setColorEnabled(true)
+    })
+
+    // brittle names a test at column 0 and indents what the test itself prints
+    const tap = `TAP version 13
+# first test
+    # reply: "hello"
+    ok 1 - an assertion
+ok 1 - first test
+# second test
+    # reply: "there"
+    ok 1 - an assertion
+ok 2 - second test
+1..2
+`
+    const lines = new SpecFormatter().formatToString(parse(tap)).split('\n')
+
+    t.ok(lines.includes('  second test'), 'the test name is a heading, at two spaces')
+    t.ok(lines.includes('    reply: "hello"'), 'the diagnostic sits with the assertions, at four')
+    t.ok(lines.includes('    reply: "there"'))
+    t.absent(lines.includes('  reply: "there"'), 'and is never promoted to a heading')
+  })
+
   t.test('hide brittle runner summary comments', (t) => {
     setColorEnabled(false)
     t.teardown(function () {
