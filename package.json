@@ -1,6 +1,6 @@
 {
   "name": "prettytap",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Pretty-print TAP results.",
   "main": "index.js",
   "exports": {
