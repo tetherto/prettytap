@@ -32,6 +32,20 @@ cat test/fixtures/example.txt | npx prettytap
 
 ![spec output](./docs/example.png)
 
+## Exit code
+
+A pipe only returns the formatter's status, so a runner that crashes after printing a clean TAP stream
+(an uncaught error on stderr, a non-zero exit) is invisible to `runner | prettytap`. Let `prettytap`
+spawn the runner instead:
+
+```bash
+prettytap -- brittle-node test/all.mjs
+prettytap -f json -- bare test/all.ts
+```
+
+The runner's stderr passes through. `prettytap` exits non-zero when the TAP stream fails or the runner
+exits non-zero, whichever happens.
+
 ## Formats
 
 - `spec` (default)
