@@ -95,6 +95,32 @@ test('exit zero when nested subtest asserts exceed the plan', opts, (t) => {
   t.is(run.status, 0)
 })
 
+test('run a command and exit with its status when TAP passes but the runner crashes', opts, (t) => {
+  const script =
+    "process.stdout.write('TAP version 13\\n1..1\\nok 1 fine\\n'); setTimeout(() => { throw new Error('boom') })"
+  const run = execCli(['--', process.execPath, '-e', script])
+
+  t.ok(run.stdout.includes('fine'))
+  t.ok(run.stderr.includes('boom'))
+  t.ok(run.stdout.includes('runner exited: 1'))
+  t.is(run.status, 1)
+})
+
+test('run a command and exit zero when both TAP and runner pass', opts, (t) => {
+  const script = "process.stdout.write('TAP version 13\\n1..1\\nok 1 fine\\n')"
+  const run = execCli(['-f', 'json', '--', process.execPath, '-e', script])
+
+  t.is(JSON.parse(run.stdout).summary.total, 1)
+  t.is(run.status, 0)
+})
+
+test('run a command and exit non-zero when TAP fails even if the runner exits zero', opts, (t) => {
+  const script = "process.stdout.write('TAP version 13\\n1..1\\nnot ok 1 bad\\n')"
+  const run = execCli(['--', process.execPath, '-e', script])
+
+  t.is(run.status, 1)
+})
+
 function cliPath() {
   return require('path').resolve(__dirname, '../bin.js')
 }
